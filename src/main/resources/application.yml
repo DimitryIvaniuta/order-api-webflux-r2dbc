@@ -1,0 +1,27 @@
+spring:
+  config:
+    import:
+      - "optional:file:.env[.properties]"
+  application:
+    name: order-api-webflux-r2dbc
+  main:
+    web-application-type: reactive
+  r2dbc:
+    url: ${ORDER_R2DBC_URL:r2dbc:postgresql://localhost:5450/orderdb}
+    username: ${ORDER_DB_USER:order}
+    password: ${ORDER_DB_PASS:order}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    url: ${ORDER_JDBC_URL:jdbc:postgresql://localhost:5450/orderdb}
+    user: ${ORDER_DB_USER:order}
+    password: ${ORDER_DB_PASS:order}
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.r2dbc: WARN

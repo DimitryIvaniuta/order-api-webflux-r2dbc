@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:17.7-alpine
+    container_name: orderdb
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: order
+      POSTGRES_PASSWORD: order
+    ports:
+      - "5450:5432"
+    volumes:
+      - pg-orderdb:/var/lib/postgresql/data
+volumes:
+  pg-orderdb:

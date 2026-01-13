@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.Classpath
+import org.gradle.process.CommandLineArgumentProvider
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.9'
@@ -20,6 +23,13 @@ ext {
     testcontainersVersion = '1.20.6'
 }
 
+configurations {
+    byteBuddyAgent {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
@@ -29,7 +39,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.postgresql:r2dbc-postgresql'
-    runtimeOnly   'org.postgresql:postgresql'             // JDBC driver for Flyway
+    runtimeOnly 'org.postgresql:postgresql'             // JDBC driver for Flyway
 
     // Lombok MUST have an explicit version (and use double-quotes if interpolating)
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -40,11 +50,26 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
 
+    testImplementation 'org.apache.commons:commons-lang3:3.20.0'
+    testImplementation 'org.apache.commons:commons-compress:1.28.0'
     testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
+    byteBuddyAgent 'net.bytebuddy:byte-buddy-agent:1.18.3'
 }
 
-test {
+class ByteBuddyAgentArgProvider implements CommandLineArgumentProvider {
+    @Classpath
+    FileCollection agentFiles
+
+    @Override
+    Iterable<String> asArguments() {
+        def jar = agentFiles.singleFile
+        return ["-javaagent:${jar.absolutePath}"]
+    }
+}
+
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
+    jvmArgumentProviders.add(new ByteBuddyAgentArgProvider(agentFiles: configurations.byteBuddyAgent))
 }

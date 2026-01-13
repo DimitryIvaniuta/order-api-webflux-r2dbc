@@ -1,11 +1,13 @@
 package com.github.dimitryivaniuta.gateway.orderapi.web.support;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -39,6 +41,13 @@ public class GlobalExceptionHandler {
 
         details.put("fieldErrors", fields);
         return Mono.just(build(HttpStatus.BAD_REQUEST, "Validation failed", req.getPath().value(), details));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Mono<ResponseEntity<ApiError>> noResource(
+            NoResourceFoundException ex, ServerHttpRequest req
+    ) {
+        return Mono.just(build(HttpStatus.NOT_FOUND, "Not Found", req.getPath().value(), null));
     }
 
     @ExceptionHandler(Exception.class)

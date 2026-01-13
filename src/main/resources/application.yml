@@ -24,4 +24,10 @@ server:
 logging:
   level:
     root: INFO
-    org.springframework.r2dbc: WARN
+    org.flywaydb: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    com.github.dimitryivaniuta.gateway: DEBUG
+    org.springframework.graphql: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] %logger{36} - %msg%n"
